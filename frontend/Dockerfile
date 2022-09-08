@@ -1,7 +1,7 @@
 FROM node:18-alpine 
 WORKDIR /core
 ENV PATH="./node_modules/.bin:$PATH"
-COPY ./  ./
+COPY .  .
 RUN npm install
 RUN npm run build
 EXPOSE 3000
