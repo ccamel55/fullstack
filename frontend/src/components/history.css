@@ -1,0 +1,13 @@
+.History {
+    height: 40px;
+    width: 100%;
+    
+    white-space:nowrap;
+}
+
+.History-info {
+    font-size: 10px;
+    font-style: italic;
+
+    color: #777777;
+}

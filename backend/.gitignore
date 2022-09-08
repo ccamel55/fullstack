@@ -1,0 +1,9 @@
+.vs/
+backend/bin/
+backend/obj/
+backend/certificate
+
+Tests/bin/
+Tests/obj/
+
+.terraform/
