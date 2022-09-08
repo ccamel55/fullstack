@@ -1,6 +1,6 @@
 # used to automatically push and deploy our app onto the azure service
 # make sure to update the publish profile on the repo when adding to a new app service
-name: Build and Deploy
+name: Build and Deploy Frontend
 
 env:
   AZURE_WEBAPP_NAME: allanterrafrontend
