@@ -1,5 +1,5 @@
 FROM node:18-alpine 
-WORKDIR /frontend
+WORKDIR /core
 ENV PATH="./node_modules/.bin:$PATH"
 COPY .  .
 RUN npm install
