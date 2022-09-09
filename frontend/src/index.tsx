@@ -13,6 +13,7 @@ import Popup from './components/popup';
 import TextField from './components/textField';
 import History, {IHistory} from './components/history';
 
+const REFRESH_MS = 30000;
 const API_URL = "http://allanterrabackend.azurewebsites.net/calc";
 
 const root = ReactDOM.createRoot(
@@ -76,13 +77,10 @@ function App() {
     if (calc === "")
       return;
 
-    var resultStr = eval(calc).toString();
+    var resultStr = (Math.round(eval(calc) * 100) / 100).toString();
     setResult(resultStr);
 
-       //http://allanterrabackend.azurewebsites.net/calc?username=alloa&calculation=1245
-    const FULL_URL = API_URL + "?username=" + userName + "&calculation=" + calc + "=" + resultStr;
-
-    axios.post(FULL_URL)
+    axios.post(API_URL + "?" + new URLSearchParams({ username: userName,  calculation: calc + "=" + resultStr}).toString())
     .catch((error) => {
       console.log(error);
     });
@@ -91,12 +89,10 @@ function App() {
   // fetch history from server
   const updateHistoryBox = () => {
     
-    axios.get(API_URL).then((result) => {
+    axios.get<IHistory[]>(API_URL).then((response) => {
+      
       setApiError(false);
-      console.log(result.data);
-
-      var newResults:IHistory[] = [];
-      setHistory(newResults);
+      setHistory(response.data.reverse());
     })
     .catch((error) => {
       console.log(error);
@@ -105,7 +101,16 @@ function App() {
   }
 
   useEffect(() => {
+
+    // on init refresh once
     updateHistoryBox();
+
+    // auto refresh ever 60 seconds
+    const interval = setInterval(() => {
+      updateHistoryBox();
+    }, REFRESH_MS);
+  
+    return () => clearInterval(interval);
   }, [])
 
   return (
@@ -118,16 +123,16 @@ function App() {
 
       <HistoryWindow>
         { apiError ? <p>API ERROR</p> :  
-        history.map(({data, userInfo}:IHistory) => {
-          return <History data={data} userInfo={userInfo}/>
+        history.map(({user, calculation, timeStamp}:IHistory) => {
+          return <History calculation={calculation} user={user} timeStamp={timeStamp}/>
         })}
       </HistoryWindow>
 
       <Window>
-        <Text str= { result === "" ? calc : result }/>
+        <Text str= { result === "" ? calc === "" ? "0" : calc : result }/>
         <ButtonGrid>
-          <Button name='+' callback={() => { updateCalc("+"); }}/>
-          <Button name='-' callback={() => { updateCalc("-"); }}/>
+          <Button name='+' callback={() => { updateCalc("+"); }}/> 
+          <Button name='-' callback={() => { updateCalc("-"); }}/> 
           <Button name='x' callback={() => { updateCalc("*"); }}/>
           <Button name='/' callback={() => { updateCalc("/"); }}/>
 
@@ -137,7 +142,7 @@ function App() {
           <Button name='4' callback={() => { updateCalc("4"); }}/>
 
           <Button name='5' callback={() => { updateCalc("5"); }}/>
-          <Button name='6' callback={() => { updateCalc("6"); }}/>     
+          <Button name='6' callback={() => { updateCalc("6"); }}/>   
           <Button name='7' callback={() => { updateCalc("7"); }}/>
           <Button name='8' callback={() => { updateCalc("8"); }}/>
 

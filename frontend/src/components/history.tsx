@@ -1,15 +1,16 @@
 import "./history.css"
 
 export interface IHistory {
-    data: string
-    userInfo: string
+    calculation: number;
+    user: string;
+    timeStamp: string;
 }
 
 export default function History(props:IHistory) {
     return (
         <div className="History">
-            <p>{props.data}</p>
-            <p className="History-info">{props.userInfo}</p>
+            <p>{props.calculation}</p>
+            <p className="History-info">{props.user}</p>
         </div>
     );
 }
