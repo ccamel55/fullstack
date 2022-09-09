@@ -1,6 +1,10 @@
 using backend;
 using backend.Models;
+using EasyCaching.Core;
 using Microsoft.EntityFrameworkCore;
+
+bool _needReCache = true;
+const string CACHE_KEY = "results";
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +13,7 @@ builder.Services.AddSwaggerGen();
 
 // i was hosting my own sql database on another computer, i dont really want to open that up to the public so where just going to use an in memory database
 builder.Services.AddDbContext<DBContext>(p => p.UseInMemoryDatabase("MyTestDatabase"));
+builder.Services.AddEasyCaching(options => { options.UseInMemory("inMemoryCache"); });
 
 // allow connection from anywhere
 builder.Services.AddCors(options =>
@@ -22,9 +27,6 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// cache isnt really needed for in memory database, however i was using this with an actualy sql database earlier so i added it
-//var cache = new SimpleCache("simpleCahce");
-
 // launch swagger so we can easily test the api when developing 
 if (app.Environment.IsDevelopment())
 {
@@ -35,7 +37,7 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowAnyOrigin");
 
 // create a new entry
-app.MapPost("/calc", (DBContext context, string username, string calculation) =>
+app.MapPost("/calc", (DBContext context, IEasyCachingProvider cache, string username, string calculation) =>
 {
     Calculation calc = new Calculation
     {
@@ -50,7 +52,7 @@ app.MapPost("/calc", (DBContext context, string username, string calculation) =>
         context.Calculations.Add(calc);
 
         context.SaveChanges();
-        //cache.setRecahce(true);
+        _needReCache = true;
 
         return Results.Ok();
     }
@@ -64,29 +66,24 @@ app.MapPost("/calc", (DBContext context, string username, string calculation) =>
     .WithName("Add Entry");
 
 // retireve most recent entries 
-app.MapGet("/calc", (DBContext context) =>
+app.MapGet("/calc", (DBContext context, IEasyCachingProvider cache) =>
 {
     try
     {
         const int NUMBER_OF_ENTRIES = 50;
 
-        /*
          // if we dont have cache or data has been changed since last cache then re cache it
-        if (!cache.hasCache() || cache.needRecahce())
+        if (!cache.Exists(CACHE_KEY) || _needReCache)
         {
             var result = context.Calculations.Take(NUMBER_OF_ENTRIES).ToArray();
 
-            cache.updateCache(result);
-            cache.setRecahce(false);
+            cache.Set(CACHE_KEY, result, TimeSpan.FromDays(1));
+            _needReCache = false;
 
             return Results.Ok(result);
         }
         else
-            return Results.Ok(cache.getCached());
-         */
-
-        var result = context.Calculations.Take(NUMBER_OF_ENTRIES).ToArray();
-        return Results.Ok(result);
+            return Results.Ok(cache.Get<Calculation[]>(CACHE_KEY).Value);
     }
     catch (Exception e)
     {
@@ -98,7 +95,7 @@ app.MapGet("/calc", (DBContext context) =>
     .WithName("Get Entries");
 
 // delete all of a user's entries from the database
-app.MapDelete("/calc", (DBContext context, string username) =>
+app.MapDelete("/calc", (DBContext context, IEasyCachingProvider cache, string username) =>
 {
     try
     {
@@ -107,7 +104,7 @@ app.MapDelete("/calc", (DBContext context, string username) =>
             context.Calculations.Remove(entry);
 
         context.SaveChanges();
-        //cache.setRecahce(true);
+        _needReCache = true;
 
         return Results.Ok();
     }
