@@ -25,9 +25,6 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ github.token }}
 
-    - name: Lowercase the repo name and username
-      run: echo "REPO=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}
-
     - name: Build and push container image to registry
       uses: docker/build-push-action@v2
       with:
@@ -48,9 +45,6 @@ jobs:
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
-      - name: Lowercase the repo name and username
-        run: echo "REPO=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}
-
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
@@ -60,7 +54,6 @@ jobs:
           images: 'ghcr.io/ccamel55/frontendimg'
   
   build-backend:
-    needs: deploy-frontend
     runs-on: 'ubuntu-latest'
 
     steps:
@@ -75,9 +68,6 @@ jobs:
         registry: https://ghcr.io/
         username: ${{ github.actor }}
         password: ${{ github.token }}
-
-    - name: Lowercase the repo name and username
-      run: echo "REPO=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}
 
     - name: Build and push container image to registry
       uses: docker/build-push-action@v2
@@ -99,9 +89,6 @@ jobs:
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
-      - name: Lowercase the repo name and username
-        run: echo "REPO=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}
-
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
