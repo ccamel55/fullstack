@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 # Fullstack calculator
 Code for a calculator that is connected to an API. Client is responsible for doing most of the grunt work, results are stored on the backend.
@@ -32,3 +33,7 @@ Alongside the personal access token, if your moving to a new environment you wil
 - `AZURE_WEBAPP_PUBLISH_PROFILE_BACKEND`: publish profile of the frontend app service, allows up to deploy our docker image to the app service.
 
 - `AZURE_WEBAPP_PUBLISH_PROFILE_FRONTEND`: same thing as above, but this time for the backend app service.
+=======
+# fullstack
+Goal of this project is to learn about devops
+>>>>>>> ab980122623a3fc824bf2f95c8655e3d0f48bd19
