@@ -2,7 +2,6 @@ using backend;
 using backend.Models;
 using Microsoft.EntityFrameworkCore;
 
-var myOrigins = "_myOrigins";
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
@@ -12,8 +11,14 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<DBContext>(p => p.UseInMemoryDatabase("MyTestDatabase"));
 
 // allow connection from anywhere
-builder.Services.AddCors(options => {
-    options.AddPolicy(myOrigins,policy => { policy.WithOrigins("*").AllowAnyHeader().AllowAnyMethod(); }) ;});
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAnyOrigin",
+        builder => builder
+        .AllowAnyOrigin()
+        .AllowAnyMethod()
+        .AllowAnyHeader());
+});
 
 var app = builder.Build();
 
@@ -26,6 +31,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors("AllowAnyOrigin");
 
 // create a new entry
 app.MapPost("/calc", (DBContext context, string username, string calculation) =>
@@ -109,5 +116,4 @@ app.MapDelete("/calc", (DBContext context, string username) =>
     .Produces(StatusCodes.Status400BadRequest)
     .WithName("Delete User's Entries");
 
-app.UseCors(myOrigins);
 app.Run();

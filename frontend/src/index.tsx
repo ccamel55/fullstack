@@ -27,7 +27,7 @@ function App() {
   const [history, setHistory] = useState<IHistory[]>([]);
 
   const [calc, setCalc] = useState("");
-  const [wasCalc, setWasCalc] = useState(false);
+  const [result, setResult] = useState("");
 
   const USERNAME_TEXT_ID = "username_text_id";
 
@@ -58,17 +58,22 @@ function App() {
         }
     
     // if we are working on a result only allow operators
-    if (wasCalc && !operators.includes(value))
+    if (result !== "") {
+      if (!operators.includes(value))
+        return
+      
+      setCalc(result + value);
+      setResult("");
+    
       return;
+    }
 
     // work on result
     setCalc(calc + value);
-    setWasCalc(false);
   }
 
   const updateResult = () => {
-    setWasCalc(true);
-    setCalc(eval(calc).toString());
+    setResult(eval(calc).toString());
   }
 
   // fetch history from server
@@ -84,7 +89,12 @@ function App() {
 
   // upload calculation to server
   const uploadCalculation = () => {
-    
+    axios.post(API_URL, {
+      username: userName,
+      calculation: calc + "=" + result
+    })
+    .catch(() => {
+    });
   }
 
   useEffect(() => {
@@ -107,7 +117,7 @@ function App() {
       </HistoryWindow>
 
       <Window>
-        <Text str= { calc === "" ? "0" : calc }/>
+        <Text str= { result === "" ? calc : result }/>
         <ButtonGrid>
           <Button name='+' callback={() => { updateCalc("+"); }}/>
           <Button name='-' callback={() => { updateCalc("-"); }}/>
@@ -126,7 +136,7 @@ function App() {
 
           <Button name='9' callback={() => { updateCalc("9") }}/>
           <Button name='0' callback={() => { updateCalc("0") }}/>
-          <Button name='C' callback={() => { setCalc(""); setWasCalc(false); }}/>
+          <Button name='C' callback={() => { setCalc(""); setResult(""); }}/>
           <Button name='=' callback={() => { updateResult(); uploadCalculation(); }}/>
         </ButtonGrid>
       </Window>
