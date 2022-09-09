@@ -2,6 +2,7 @@ using backend;
 using backend.Models;
 using Microsoft.EntityFrameworkCore;
 
+var myOrigins = "_myOrigins";
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
@@ -9,6 +10,10 @@ builder.Services.AddSwaggerGen();
 
 // i was hosting my own sql database on another computer, i dont really want to open that up to the public so where just going to use an in memory database
 builder.Services.AddDbContext<DBContext>(p => p.UseInMemoryDatabase("MyTestDatabase"));
+
+// allow connection from anywhere
+builder.Services.AddCors(options => {
+    options.AddPolicy(myOrigins,policy => { policy.WithOrigins("*").AllowAnyHeader().AllowAnyMethod(); }) ;});
 
 var app = builder.Build();
 
@@ -104,4 +109,5 @@ app.MapDelete("/calc", (DBContext context, string username) =>
     .Produces(StatusCodes.Status400BadRequest)
     .WithName("Delete User's Entries");
 
+app.UseCors(myOrigins);
 app.Run();

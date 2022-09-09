@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
+import axios from "axios";
 
 import "./index.css"
 
@@ -8,9 +9,11 @@ import Text from './components/text';
 import Button from './components/button';
 import ButtonGrid from './components/buttonGrid';
 import HistoryWindow from './components/historyWindow';
-import History from './components/history';
 import Popup from './components/popup';
 import TextField from './components/textField';
+import History, {IHistory} from './components/history';
+
+const API_URL = "http://allanterrabackend.azurewebsites.net/calc";
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -20,6 +23,8 @@ function App() {
 
   const [usePopup, setUsePopup] = useState(true);
   const [userName, setUserName] = useState(null);
+  const [apiError, setApiError] = useState(false);
+  const [history, setHistory] = useState<IHistory[]>([]);
 
   const [calc, setCalc] = useState("");
   const [wasCalc, setWasCalc] = useState(false);
@@ -36,6 +41,7 @@ function App() {
       return;
     
       setUsePopup(false);
+      console.log(userName);
   }
 
   const updateCalc = (value:any) => {
@@ -65,6 +71,26 @@ function App() {
     setCalc(eval(calc).toString());
   }
 
+  // fetch history from server
+  const updateHistoryBox = () => {
+    axios.get(API_URL).then((result) => {
+      console.log(result.data);
+      setApiError(false);
+    })
+    .catch(() => {
+      setApiError(true);
+    })
+  }
+
+  // upload calculation to server
+  const uploadCalculation = () => {
+    
+  }
+
+  useEffect(() => {
+    updateHistoryBox();
+  }, [])
+
   return (
     <div className="App">
       <Popup open={usePopup}>
@@ -74,7 +100,10 @@ function App() {
       </Popup>
 
       <HistoryWindow>
-        <History data={"some calc"}/>
+        { apiError ? <p>API ERROR</p> :  
+        history.map(({data, userInfo}:IHistory) => {
+          return <History data={data} userInfo={userInfo}/>
+        })}
       </HistoryWindow>
 
       <Window>
@@ -98,7 +127,7 @@ function App() {
           <Button name='9' callback={() => { updateCalc("9") }}/>
           <Button name='0' callback={() => { updateCalc("0") }}/>
           <Button name='C' callback={() => { setCalc(""); setWasCalc(false); }}/>
-          <Button name='=' callback={() => { updateResult(); }}/>
+          <Button name='=' callback={() => { updateResult(); uploadCalculation(); }}/>
         </ButtonGrid>
       </Window>
     </div>
