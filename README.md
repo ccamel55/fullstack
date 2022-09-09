@@ -1,2 +1,2 @@
 # fullstack
-simple fullstack app
+Goal of this project is to learn about devops
