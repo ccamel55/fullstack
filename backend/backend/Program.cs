@@ -118,3 +118,5 @@ app.MapDelete("/calc", (DBContext context, IEasyCachingProvider cache, string us
     .WithName("Delete User's Entries");
 
 app.Run();
+
+public partial class Program { }
