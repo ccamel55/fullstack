@@ -23,7 +23,7 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // cache isnt really needed for in memory database, however i was using this with an actualy sql database earlier so i added it
-var cache = new SimpleCache("simpleCahce");
+//var cache = new SimpleCache("simpleCahce");
 
 // launch swagger so we can easily test the api when developing 
 if (app.Environment.IsDevelopment())
@@ -50,7 +50,7 @@ app.MapPost("/calc", (DBContext context, string username, string calculation) =>
         context.Calculations.Add(calc);
 
         context.SaveChanges();
-        cache.setRecahce(true);
+        //cache.setRecahce(true);
 
         return Results.Ok();
     }
@@ -70,7 +70,8 @@ app.MapGet("/calc", (DBContext context) =>
     {
         const int NUMBER_OF_ENTRIES = 50;
 
-        // if we dont have cache or data has been changed since last cache then re cache it
+        /*
+         // if we dont have cache or data has been changed since last cache then re cache it
         if (!cache.hasCache() || cache.needRecahce())
         {
             var result = context.Calculations.Take(NUMBER_OF_ENTRIES).ToArray();
@@ -82,7 +83,10 @@ app.MapGet("/calc", (DBContext context) =>
         }
         else
             return Results.Ok(cache.getCached());
+         */
 
+        var result = context.Calculations.Take(NUMBER_OF_ENTRIES).ToArray();
+        return Results.Ok(result);
     }
     catch (Exception e)
     {
@@ -103,7 +107,7 @@ app.MapDelete("/calc", (DBContext context, string username) =>
             context.Calculations.Remove(entry);
 
         context.SaveChanges();
-        cache.setRecahce(true);
+        //cache.setRecahce(true);
 
         return Results.Ok();
     }
