@@ -6,10 +6,12 @@ namespace backend
     public class SimpleCache
     {
         private readonly string _cacheKey;
+        private bool _forceRecache;
 
         public SimpleCache(string cacheKey)
         {
             _cacheKey = cacheKey;
+            _forceRecache = false;
         }
      
         public void updateCache(IEnumerable<Calculation> items)
@@ -37,6 +39,15 @@ namespace backend
         {
             var cache = MemoryCache.Default;
             return cache.Contains(_cacheKey);
+        }
+        public void setRecahce(bool val)
+        {
+            _forceRecache = val;
+        }
+
+        public bool needRecahce()
+        {
+           return _forceRecache;
         }
     }
 }

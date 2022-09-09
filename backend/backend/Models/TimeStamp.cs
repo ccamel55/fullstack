@@ -2,9 +2,9 @@
 {
     public class TimeStamp
     {
-        public string? month { get; set; } = null;
-        public string? date { get; set; } = null;
-        public string? hour { get; set; } = null;
-        public string? minute { get; set; } = null;
+        public int month { get; set; }
+        public int date { get; set; }
+        public int hour { get; set; } 
+        public int minute { get; set; }
     }
 }

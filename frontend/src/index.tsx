@@ -19,17 +19,17 @@ const root = ReactDOM.createRoot(
 function App() {
 
   const [usePopup, setUsePopup] = useState(true);
-  const [textData, setTextData] = useState(null)
+  const [userName, setUserName] = useState(null);
 
-  const usernameTextID = "username_text_id";
+  const USERNAME_TEXT_ID = "username_text_id";
 
   const updateTextData = (event:any) => {
-    setTextData(event.target.value);
+    setUserName(event.target.value);
   }
 
   const processUsername = () => {
 
-    if (textData == null)
+    if (userName == null)
       return;
     
       setUsePopup(false);
@@ -39,7 +39,7 @@ function App() {
     <div className="App">
       <Popup open={usePopup}>
         <h2>Enter a username</h2>
-        <TextField id={usernameTextID} callback={updateTextData}/>
+        <TextField id={USERNAME_TEXT_ID} callback={updateTextData}/>
         <Button name='Continue' callback={processUsername}/>
       </Popup>
 
