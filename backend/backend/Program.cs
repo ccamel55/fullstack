@@ -22,8 +22,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
 // create a new entry
 app.MapPost("/calc", (DBContext context, string username, string calculation) =>
 {
