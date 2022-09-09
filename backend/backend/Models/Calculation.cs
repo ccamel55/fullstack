@@ -4,8 +4,8 @@
     {
         public string? calculation { get; set; } = null;
 
-        public User? user { get; set; } = null;
+        public string? user { get; set; } = null;
 
-        public TimeStamp? timeStamp { get; set; } = null;
+        public DateTime? timeStamp { get; set; } = null;
     }
 }

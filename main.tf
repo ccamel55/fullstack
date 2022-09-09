@@ -26,7 +26,7 @@ resource "azurerm_service_plan" "asp" {
   resource_group_name = azurerm_resource_group.arg.name
   location            = azurerm_resource_group.arg.location
   os_type             = "Linux"
-  sku_name            = "B1"
+  sku_name            = "B2"
 }
 
 # create app service to put the app onto

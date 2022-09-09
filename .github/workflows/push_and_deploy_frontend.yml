@@ -2,9 +2,6 @@
 # make sure to update the publish profile on the repo when adding to a new app service
 name: Build and Deploy Frontend
 
-env:
-  AZURE_WEBAPP_NAME: allanterrafrontend
-
 on:
   push:
     paths:
@@ -58,6 +55,6 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          app-name: allanterrafrontend
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_FRONTEND }}
           images: 'ghcr.io/${{ env.REPO }}:${{ github.sha }}'

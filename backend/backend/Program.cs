@@ -1,12 +1,19 @@
 using backend;
 using backend.Models;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// i was hosting my own sql database on another computer, i dont really want to open that up to the public so where just going to use an in memory database
+builder.Services.AddDbContext<DBContext>(p => p.UseInMemoryDatabase("MyTestDatabase"));
+
 var app = builder.Build();
+
+// cache isnt really needed for in memory database, however i was using this with an actualy sql database earlier so i added it
+var cache = new SimpleCache("cache");
 
 // launch swagger so we can easily test the api when developing 
 if (app.Environment.IsDevelopment())
@@ -17,50 +24,24 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// create an instance of our raven DB
-var ravenDB = new RavenDB(builder.Configuration.GetSection("Database"));
-var calcCache = new SimpleCache("calcCache");
-
-ravenDB.MakeSureExists();
-
 // create a new entry
-app.MapPost("/calc", (string username, string calculation) =>
+app.MapPost("/calc", (DBContext context, string username, string calculation) =>
 {
-    var curTime = DateTime.Now;
- 
-    User user = new User
-    {
-        name = username
-    };
-
-    TimeStamp timestamp = new TimeStamp
-    {
-        month = curTime.Month,
-        date = curTime.Day,
-        hour = curTime.Hour,
-        minute = curTime.Minute
-    };
-
     Calculation calc = new Calculation
     {
         calculation = calculation,
-        user = user,
-        timeStamp = timestamp
+        user = username,
+        timeStamp = DateTime.Now
     };
 
     try
     {
-        var session = ravenDB.createSession();
+        // add to list of calculations
+        context.Calculations.Add(calc);
 
-        // check if we already have the user, if not add
-        if (session.Query<User>().Where(x => x.name.Equals(username)).ToList().Count == 0)
-            session.Store(user);
+        context.SaveChanges();
+        cache.setRecahce(true);
 
-        session.Store(calc);
-        session.SaveChanges();
-        
-        // we only update the cache if we changed something
-        calcCache.setRecahce(true);
         return Results.Ok();
     }
     catch (Exception e)
@@ -73,23 +54,25 @@ app.MapPost("/calc", (string username, string calculation) =>
     .WithName("Add Entry");
 
 // retireve most recent entries 
-app.MapGet("/calc", () =>
+app.MapGet("/calc", (DBContext context) =>
 {
     try
     {
-        // if we dont have cache or data has been changed since last cache then re cache it
-        if (!calcCache.hasCache() || calcCache.needRecahce())
-        {
-            var session = ravenDB.createSession();
-            var result = session.Query<Calculation>().Take(20).ToList();
+        const int NUMBER_OF_ENTRIES = 50;
 
-            calcCache.updateCache(result);
-            calcCache.setRecahce(false);
+        // if we dont have cache or data has been changed since last cache then re cache it
+        if (!cache.hasCache() || cache.needRecahce())
+        {
+            var result = context.Calculations.Take(NUMBER_OF_ENTRIES).ToArray();
+
+            cache.updateCache(result);
+            cache.setRecahce(false);
 
             return Results.Ok(result);
         }
         else
-            return Results.Ok(calcCache.getCached());
+            return Results.Ok(cache.getCached());
+
     }
     catch (Exception e)
     {
@@ -101,19 +84,16 @@ app.MapGet("/calc", () =>
     .WithName("Get Entries");
 
 // delete all of a user's entries from the database
-app.MapDelete("/calc", (string username) =>
+app.MapDelete("/calc", (DBContext context, string username) =>
 {
     try
     {
-        var session = ravenDB.createSession();
-        var userEntries = session.Query<Calculation>().Where(x => x.user.name.Equals(username)).ToList();
+        // remove all entries created by user
+        foreach (var entry in context.Calculations.Where(e => e.user.Equals(username)))
+            context.Calculations.Remove(entry);
 
-        // remove a user' calculations
-        foreach (var i in userEntries)
-            session.Delete(i);
-
-        session.SaveChanges();
-        calcCache.setRecahce(true);
+        context.SaveChanges();
+        cache.setRecahce(true);
 
         return Results.Ok();
     }

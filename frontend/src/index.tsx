@@ -78,7 +78,7 @@ function App() {
       </HistoryWindow>
 
       <Window>
-        <Text str= { calc }/>
+        <Text str= { calc === "" ? "0" : calc }/>
         <ButtonGrid>
           <Button name='+' callback={() => { updateCalc("+"); }}/>
           <Button name='-' callback={() => { updateCalc("-"); }}/>
