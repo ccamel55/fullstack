@@ -22,7 +22,7 @@ const root = ReactDOM.createRoot(
 function App() {
 
   const [usePopup, setUsePopup] = useState(true);
-  const [userName, setUserName] = useState(null);
+  const [userName, setUserName] = useState("");
   const [apiError, setApiError] = useState(false);
   const [history, setHistory] = useState<IHistory[]>([]);
 
@@ -37,7 +37,7 @@ function App() {
 
   const processUsername = () => {
 
-    if (userName == null)
+    if (userName === "")
       return;
     
       setUsePopup(false);
@@ -73,28 +73,35 @@ function App() {
   }
 
   const updateResult = () => {
-    setResult(eval(calc).toString());
+    if (calc === "")
+      return;
+
+    var resultStr = eval(calc).toString();
+    setResult(resultStr);
+
+       //http://allanterrabackend.azurewebsites.net/calc?username=alloa&calculation=1245
+    const FULL_URL = API_URL + "?username=" + userName + "&calculation=" + calc + "=" + resultStr;
+
+    axios.post(FULL_URL)
+    .catch((error) => {
+      console.log(error);
+    });
   }
 
   // fetch history from server
   const updateHistoryBox = () => {
+    
     axios.get(API_URL).then((result) => {
-      console.log(result.data);
       setApiError(false);
+      console.log(result.data);
+
+      var newResults:IHistory[] = [];
+      setHistory(newResults);
     })
-    .catch(() => {
+    .catch((error) => {
+      console.log(error);
       setApiError(true);
     })
-  }
-
-  // upload calculation to server
-  const uploadCalculation = () => {
-    axios.post(API_URL, {
-      username: userName,
-      calculation: calc + "=" + result
-    })
-    .catch(() => {
-    });
   }
 
   useEffect(() => {
@@ -137,7 +144,7 @@ function App() {
           <Button name='9' callback={() => { updateCalc("9") }}/>
           <Button name='0' callback={() => { updateCalc("0") }}/>
           <Button name='C' callback={() => { setCalc(""); setResult(""); }}/>
-          <Button name='=' callback={() => { updateResult(); uploadCalculation(); }}/>
+          <Button name='=' callback={() => { updateResult(); }}/>
         </ButtonGrid>
       </Window>
     </div>

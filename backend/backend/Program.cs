@@ -23,7 +23,7 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // cache isnt really needed for in memory database, however i was using this with an actualy sql database earlier so i added it
-var cache = new SimpleCache("cache");
+var cache = new SimpleCache("simpleCahce");
 
 // launch swagger so we can easily test the api when developing 
 if (app.Environment.IsDevelopment())

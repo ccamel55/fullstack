@@ -20,7 +20,7 @@ namespace backend
 
             // keep data for the next hour
             CacheItemPolicy cacheItemPolicy = new CacheItemPolicy();
-            cacheItemPolicy.AbsoluteExpiration = DateTime.Now.AddHours(1.0);
+            cacheItemPolicy.Priority = CacheItemPriority.NotRemovable;
 
             cache.Add(_cacheKey, items, cacheItemPolicy);
         }
